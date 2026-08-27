@@ -60,6 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form> 
     <br>  
 
-    <button type="button" onclick="window.location.href='../../index.php'">Voltar</button>
+    <button type="button" onclick="window.location.href='index.php'">Voltar</button>
 </body>
 </html>
