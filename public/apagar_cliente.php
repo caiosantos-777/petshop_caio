@@ -1,6 +1,6 @@
 <?php
 $id = $_GET['id'];
-include '../infra/conexao.php';
+include 'infra/connect.php';
 
 $sql = "DELETE FROM clientes WHERE id = $id";
 if ($conn->query($sql) === TRUE) {

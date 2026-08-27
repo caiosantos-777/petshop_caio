@@ -7,7 +7,6 @@ create table clientes(
     email varchar(100) not null,
     telefone varchar(20)
 );
-
 create table pets(
     id int auto_increment primary key,
     nome varchar(100) not null,

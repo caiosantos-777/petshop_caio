@@ -1,75 +1,110 @@
 <?php
+include 'infra/connect.php';
 
-include '../../infra/conexao.php';
+$mensagem = '';
+// Validação do ID da URL
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
-$id = $_GET['id'];
-$sql = "SELECT * FROM pets WHERE id = $id";
-$pet_editantes = $conn->query($sql);
-$pet = $pet_editantes->fetch_assoc();
+if (!$id) {
+    die("ID do pet inválido ou não informado.");
+}
 
+// Processamento da atualização via POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nome = $_POST['nome'];
-    $especie = $_POST['especie'];
-    $raca = $_POST['raca'];
-    $idade = $_POST['idade'];
-    $cliente_id = $_POST['cliente_id'];
+    $nome = trim($_POST['nome'] ?? '');
+    $especie = trim($_POST['especie'] ?? '');
+    $raca = trim($_POST['raca'] ?? '');
+    $idade = (isset($_POST['idade']) && $_POST['idade'] !== '') ? (int)$_POST['idade'] : null;
+    $cliente_id = filter_input(INPUT_POST, 'cliente_id', FILTER_VALIDATE_INT);
 
-    $sql = "UPDATE pets SET nome='$nome', especie='$especie', raca='$raca', idade='$idade', cliente_id='$cliente_id' WHERE id=$id";
-    if ($conn->query($sql) === TRUE) {
-        echo "Pet atualizado com sucesso!";
+    if (empty($nome) || empty($especie) || !$cliente_id) {
+        $mensagem = "Por favor, preencha o nome, a espécie e selecione um cliente válido.";
     } else {
-        echo "Erro: " . $sql . "<br>" . $conn->error;
+        $stmt_update = $conn->prepare("UPDATE pets SET nome = ?, especie = ?, raca = ?, idade = ?, cliente_id = ? WHERE id = ?");
+        if ($stmt_update) {
+            $stmt_update->bind_param("sssiii", $nome, $especie, $raca, $idade, $cliente_id, $id);
+
+            if ($stmt_update->execute()) {
+                $mensagem = "Pet atualizado com sucesso!";
+            } else {
+                $mensagem = "Erro ao atualizar: " . $stmt_update->error;
+            }
+            $stmt_update->close();
+        } else {
+            $mensagem = "Erro na preparação da consulta: " . $conn->error;
+        }
     }
 }
 
+$stmt_select = $conn->prepare("SELECT nome, especie, raca, idade, cliente_id FROM pets WHERE id = ?");
+$stmt_select->bind_param("i", $id);
+$stmt_select->execute();
+$result = $stmt_select->get_result();
+$pet = $result->fetch_assoc();
+$stmt_select->close();
+
+if (!$pet) {
+    die("Pet não encontrado.");
+}
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adicionar Novo Pet</title>
+    <title>Editar Pet</title>
 </head>
 
 <body>
-    <h2>Adicionar Novo Pet</h2>
+    <h2>Editar Pet</h2>
+
+    <?php if (!empty($mensagem)): ?>
+        <p><strong><?= htmlspecialchars($mensagem) ?></strong></p>
+    <?php endif; ?>
+
     <form method="POST">
         <label for="nome">Nome:</label>
-        <input type="text" id="nome" name="nome" value="<?php echo $pet['nome']; ?>" required>
+        <input type="text" id="nome" name="nome" value="<?= htmlspecialchars($pet['nome']) ?>" required>
         <br><br>
+
         <label for="especie">Espécie:</label>
-        <input type="text" id="especie" name="especie" value="<?php echo $pet['especie']; ?>" required>
+        <input type="text" id="especie" name="especie" value="<?= htmlspecialchars($pet['especie']) ?>" required>
         <br><br>
+
         <label for="raca">Raça:</label>
-        <input type="text" id="raca" name="raca" value="<?php echo $pet['raca']; ?>">
+        <input type="text" id="raca" name="raca" value="<?= htmlspecialchars($pet['raca'] ?? '') ?>">
         <br><br>
+
         <label for="idade">Idade:</label>
-        <input type="number" id="idade" name="idade" value="<?php echo $pet['idade']; ?>">
+        <input type="number" id="idade" name="idade" value="<?= htmlspecialchars($pet['idade'] ?? '') ?>" min="0">
         <br><br>
 
-        <select name="cliente_id" required>
-            <option value="" >Selecione o Cliente</option>
+        <label for="cliente_id">Cliente:</label>
+        <select id="cliente_id" name="cliente_id" required>
+            <option value="">Selecione o Cliente</option>
             <?php
-                $sql = "SELECT id, nome FROM clientes";
-                $clientes = $conn->query($sql);
+            $sql = "SELECT id, nome FROM clientes ORDER BY nome ASC";
+            $clientes = $conn->query($sql);
+
+            if ($clientes && $clientes->num_rows > 0) {
                 while ($cliente = $clientes->fetch_assoc()) {
-            ?>
-
-            <option value="<?php echo $cliente['id'];?>" <?php if ($pet['cliente_id'] == $cliente['id']) echo 'selected'; ?>>
-                <?php echo $cliente['nome'];?>
-            </option>
-
-
-            <?php
-                } 
+                    $clienteId = (int)$cliente['id'];
+                    $nomeCliente = htmlspecialchars($cliente['nome']);
+                    $selected = ($pet['cliente_id'] == $clienteId) ? 'selected' : '';
+                    
+                    echo "<option value=\"{$clienteId}\" {$selected}>{$nomeCliente}</option>";
+                }
+            }
             ?>
         </select>
-        <button type="submit">Cadastrar Pet</button>
+        <br><br>
+
+        <button type="submit">Salvar Alterações</button>
     </form>
     <br>
-    <button type="button" onclick="window.location.href='../../index.php'">Voltar</button>
+    <button type="button" onclick="window.location.href='index.php'">Voltar</button>
 </body>
 
 </html>

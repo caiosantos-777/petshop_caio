@@ -1,3 +1,6 @@
+<?php
+include 'infra/connect.php';
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,10 +12,10 @@
 </head>
 
 <body>
-    <h2>Pet Show!</h2>
+    <h2>Petshop</h2>
 
-    <button type="button" onclick="window.location.href='public/clientes/add_cliente.php'">Cadastrar Cliente</button>
-    <button type="button" onclick="window.location.href='public/pets/add_pets.php'">Cadastrar Pets</button>
+    <button type="button" onclick="window.location.href='public/cadastrar_cliente.php'">Cadastrar Cliente</button>
+    <button type="button" onclick="window.location.href='public/cadastrar_pet.php'">Cadastrar Pet</button>
 
     <br>
     <h2>Lista de Clientes</h2>
@@ -24,7 +27,7 @@
         <th>Telefone</th>
         <th>Ações</th>
         <?php
-        include 'infra/conexao.php';
+        include '../infra/connect.php';
         $sql = "SELECT * FROM clientes";
         $clientes = $conn->query($sql);
         while ($cliente = $clientes->fetch_assoc()) {
@@ -36,8 +39,8 @@
                 <td><?php echo $cliente['email']; ?></td>
                 <td><?php echo $cliente['telefone']; ?></td>
                 <td>
-                    <button type="button" onclick="window.location.href='public/clientes/edit_cliente.php?id=<?php echo $cliente['id']; ?>'">Editar</button>
-                    <button type="button" onclick="if (confirm('Tem certeza que deseja excluir este cliente?')) { window.location.href='public/clientes/delete_cliente.php?id=<?php echo $cliente['id']; ?>'; }">Excluir</button>
+                    <button type="button" onclick="window.location.href='public/edit_cliente.php?id=<?php echo $cliente['id']; ?>'">Editar</button>
+                    <button type="button" onclick="if (confirm('Tem certeza que deseja excluir este cliente?')) { window.location.href='public/clientes/apagar_cliente.php?id=<?php echo $cliente['id']; ?>'; }">Excluir</button>
                 </td>
             </tr>
 
@@ -68,8 +71,8 @@
                 <td><?php echo $pet['idade']; ?></td>
                 <td><?php echo $pet['cliente_id']; ?></td>
                 <td>
-                    <button type="button" onclick="window.location.href='public/pets/edit_pets.php?id=<?php echo $pet['id']; ?>'">Editar</button>
-                    <button type="button" onclick="if (confirm('Tem certeza que deseja excluir este pet?')) { window.location.href='public/pets/delete_pets.php?id=<?php echo $pet['id']; ?>'; }">Excluir</button>
+                    <button type="button" onclick="window.location.href='public/edit_animal.php?id=<?php echo $pet['id']; ?>'">Editar</button>
+                    <button type="button" onclick="if (confirm('Tem certeza que deseja excluir este pet?')) { window.location.href='public/pets/apagar_animal.php?id=<?php echo $pet['id']; ?>'; }">Excluir</button>
                 </td>
             </tr>
 
