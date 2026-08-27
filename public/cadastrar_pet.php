@@ -4,23 +4,20 @@ include 'infra/connect.php';
 $mensagem = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Captura e sanitarização dos inputs
     $nome = trim($_POST['nome'] ?? '');
     $especie = trim($_POST['especie'] ?? '');
     $raca = trim($_POST['raca'] ?? '');
-    // Caso a idade esteja vazia, define como NULL, senão converte para inteiro
+
     $idade = (isset($_POST['idade']) && $_POST['idade'] !== '') ? (int)$_POST['idade'] : null;
     $cliente_id = filter_input(INPUT_POST, 'cliente_id', FILTER_VALIDATE_INT);
 
-    // Validação básica
+  
     if (empty($nome) || empty($especie) || !$cliente_id) {
         $mensagem = "Por favor, preencha o nome, a espécie e selecione um cliente válido.";
     } else {
-        // Prepared Statement para inserção segura
         $stmt = $conn->prepare("INSERT INTO pets (nome, especie, raca, idade, cliente_id) VALUES (?, ?, ?, ?, ?)");
         
         if ($stmt) {
-            // "sssii": 3 strings (nome, especie, raca) e 2 inteiros (idade, cliente_id)
             $stmt->bind_param("sssii", $nome, $especie, $raca, $idade, $cliente_id);
 
             if ($stmt->execute()) {

@@ -4,12 +4,10 @@ include 'infra/connect.php';
 $mensagem = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Sanitarização e limpeza dos campos
     $nome = trim($_POST['nome'] ?? '');
     $email = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
     $telefone = trim($_POST['telefone'] ?? '');
 
-    // Validação básica
     if (empty($nome) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $mensagem = "Por favor, preencha um nome e um e-mail válido.";
     } else {

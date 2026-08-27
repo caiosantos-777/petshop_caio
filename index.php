@@ -27,7 +27,6 @@ include 'infra/connect.php';
         <th>Telefone</th>
         <th>Ações</th>
         <?php
-        include '../infra/connect.php';
         $sql = "SELECT * FROM clientes";
         $clientes = $conn->query($sql);
         while ($cliente = $clientes->fetch_assoc()) {
